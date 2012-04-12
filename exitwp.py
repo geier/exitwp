@@ -7,7 +7,6 @@ from datetime import datetime
 from glob import glob
 import re
 import sys
-import yaml
 from BeautifulSoup import BeautifulSoup
 from urlparse import urlparse, urljoin
 from urllib import urlretrieve
