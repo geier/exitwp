@@ -11,6 +11,7 @@ from BeautifulSoup import BeautifulSoup
 from urlparse import urlparse, urljoin
 from urllib import urlretrieve
 from html2text import html2text_file
+import yaml
 
 '''
 exitwp - Wordpress xml exports to Jekykll blog format conversion
