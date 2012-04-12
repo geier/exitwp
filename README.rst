@@ -2,11 +2,16 @@
 Exitwp
 ######
 
-Exitwp is tool for making migration from one or more wordpress blogs to the `jekyll blog engine <https://github.com/mojombo/jekyll/>`_ as easy as possible.
+This fork of `exitwp <https://github.com/thomasf/exitwp>`_ tries to ease the migration from wordpress to `pelican <http://pelican.notmyidea.org/>`_.
+
+Changes:
+   * extension of generated files is .md not .markdown
+   * Header in a format pelican likes
+   * previous categories are added to the tags, as pelican cannot cope with
+     more than categorie per entry (category in now 'blog' for all posts'
 
 By default it will try to convert as much information as possible from wordpress but can also be told to filter the amount of data it converts.
 
-The latest version of these docs should always be available at https://github.com/thomasf/exitwp
 
 Getting started
 ===============
@@ -22,14 +27,13 @@ Runtime dependencies
 ====================
  * `Python <http://python.org/>`_ 2.6, 2.7, ???
  * `html2text <http://www.aaronsw.com/2002/html2text/>`_ :  converts HTML to markdown (python)
- * `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ : Reading configuration files and writing YAML headers (python)
  * `Beautiful soup <http://www.crummy.com/software/BeautifulSoup/>`_ : Parsing and downloading of post images/attachments (python)
 
 
 Installing dependencies in ubuntu/debian
 ----------------------------------------
 
-   ``sudo apt-get install python-yaml python-beautifulsoup python-html2text``
+   ``sudo apt-get install python-beautifulsoup python-html2text``
 
 Installing Python dependencies using python package installer (pip)
 -------------------------------------------------------------------

@@ -66,7 +66,7 @@ def parse_wp_xml(file):
 
     def parse_header():
         return {
-            "title": unicode(c.find('title').text),
+            "Title": unicode(c.find('title').text),
             "link": unicode(c.find('link').text),
             "description": unicode(c.find('description').text)
         }
@@ -115,8 +115,8 @@ def parse_wp_xml(file):
             #print img_srcs
 
             export_item = {
-                'title': gi('title'),
-                'date': gi('wp:post_date'),
+                'Title': gi('title'),
+                'Date': gi('wp:post_date'),
                 'slug': gi('wp:post_name'),
                 'status': gi('wp:status'),
                 'type': gi('wp:post_type'),
@@ -126,6 +126,8 @@ def parse_wp_xml(file):
                 'body': body,
                 'img_srcs': img_srcs
                 }
+            if export_item['status'] == 'publish':
+                export_item['status'] = 'published'
 
             export_items.append(export_item)
 
@@ -171,12 +173,12 @@ def write_jekyll(data, target_format):
         else:
             uid = []
             if (date_prefix):
-                dt = datetime.strptime(item['date'], date_fmt)
+                dt = datetime.strptime(item['Date'], date_fmt)
                 uid.append(dt.strftime('%Y-%m-%d'))
                 uid.append('-')
             s_title = item['slug']
             if s_title is None or s_title == '':
-                s_title = item['title']
+                s_title = item['Title']
             if s_title is None or s_title == '':
                 s_title = 'untitled'
             s_title = s_title.replace(' ', '_')
@@ -248,8 +250,8 @@ def write_jekyll(data, target_format):
         sys.stdout.flush()
         out = None
         yaml_header = {
-          'title': i['title'],
-          'date': i['date'],
+          'Title': i['Title'],
+          'Date': i['Date'],
           'slug': i['slug'],
           'status': i['status'],
           'wordpress_id': i['wp_id'],
@@ -302,17 +304,32 @@ def write_jekyll(data, target_format):
                         continue
                     tax_out[t_name].append(tvalue)
 
-            out.write('---\n')
             if len(yaml_header) > 0:
-                out.write(toyaml(yaml_header))
+                for key in yaml_header.keys():
+                    out.write(key + ': ' + yaml_header[key] + '\n')
             if len(tax_out) > 0:
-                out.write(toyaml(tax_out))
+                try:
+                    tax_out['tags'].extend(tax_out['categories'])
+                except KeyError:
+                    tax_out['tags'] = tax_out['categories']
+                try:
+                    tax_out['tags'] = list(set(tax_out['tags']))
+                except:
+                    pass
+                tax_out[u'Category'] = u'blog'
+                del tax_out[ u'categories']
+                for key in tax_out:
+                    if key == u'Category':
+                        out.write(key + u": " + tax_out[key] + u'\n')
+                    else:
+                        out.write(key + u": " + u', '.join(tax_out[key]) + u'\n')
 
-            out.write('---\n\n')
+
+            out.write('\n\n')
             try:
                 out.write(html2fmt(i['body'], target_format))
             except:
-                print "\n Parse error on: " + i['title']
+                print "\n Parse error on: " + i['Title']
 
             out.close()
     print "\n"
