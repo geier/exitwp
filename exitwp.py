@@ -12,6 +12,7 @@ from urlparse import urlparse, urljoin
 from urllib import urlretrieve
 from html2text import html2text_file
 import yaml
+import string
 
 '''
 exitwp - Wordpress xml exports to Jekykll blog format conversion
@@ -118,6 +119,7 @@ def parse_wp_xml(file):
             export_item = {
                 'Title': gi('title'),
                 'Date': gi('wp:post_date'),
+                'link' : gi('link'),
                 'slug': gi('wp:post_name'),
                 'status': gi('wp:status'),
                 'type': gi('wp:post_type'),
@@ -194,6 +196,36 @@ def write_jekyll(data, target_format):
             result = fn
         return result
 
+    def get_s_title(item, date_prefix=False, namespace=''):
+        result = None
+        if namespace not in item_uids:
+            item_uids[namespace] = {}
+
+        if item['wp_id'] in item_uids[namespace]:
+            result = item_uids[namespace][item['wp_id']]
+        else:
+            uid = []
+            if (date_prefix):
+                dt = datetime.strptime(item['Date'], date_fmt)
+                uid.append(dt.strftime('%Y-%m-%d'))
+                uid.append('-')
+            s_title = item['slug']
+            if s_title is None or s_title == '':
+                s_title = item['Title']
+            if s_title is None or s_title == '':
+                s_title = 'untitled'
+            s_title = s_title.replace(' ', '_')
+            s_title = re.sub('[^a-zA-Z0-9_-]', '', s_title)
+            uid.append(s_title)
+            fn = ''.join(uid)
+            n = 1
+            while fn in item_uids[namespace]:
+                n = n + 1
+                fn = ''.join(uid) + '_' + str(n)
+                item_uids[namespace][i['wp_id']] = fn
+            result = fn
+        return s_title
+
     def get_item_path(item, dir=''):
         full_dir = get_full_dir(dir)
         filename_parts = [full_dir, '/']
@@ -236,7 +268,9 @@ def write_jekyll(data, target_format):
         ##print target_name
         return target_file
 
+    redirect = open_file('redirects')
     for i in data['items']:
+
         skip_item = False
 
         for field, value in item_field_filter.iteritems():
@@ -263,6 +297,7 @@ def write_jekyll(data, target_format):
             fn = get_item_path(i, dir='_posts')
             out = open_file(fn)
             yaml_header['layout'] = 'post'
+
         elif i['type'] == 'page':
             i['uid'] = get_item_uid(i)
             # Chase down parent path, if any
@@ -332,8 +367,15 @@ def write_jekyll(data, target_format):
             except:
                 print "\n Parse error on: " + i['Title']
 
+            old =  '/blog' + string.replace(i['link'], data['header']['link'], '') 
+            new = '/blog/' + get_s_title(i) + '.html'
+            redirect.write('Redirect ' + old + ' ' +  new + '\n')
+
+
+
             out.close()
     print "\n"
+    redirect.close()
 
 wp_exports = glob(wp_exports + '/*.xml')
 for wpe in wp_exports:
